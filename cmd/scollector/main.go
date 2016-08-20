@@ -27,6 +27,7 @@ import (
 	"bosun.org/slog"
 	"bosun.org/util"
 	"github.com/BurntSushi/toml"
+	"github.com/facebookgo/httpcontrol"
 )
 
 var (
@@ -45,6 +46,23 @@ var (
 
 	mains []func()
 )
+
+type scollectorHTTPTransport struct {
+	UserAgent string
+	http.RoundTripper
+}
+
+func init() {
+	client := &http.Client{
+		Transport: &scollectorHTTPTransport{
+			"Scollector/" + version.ShortVersion(),
+			&httpcontrol.Transport{
+				RequestTimeout: time.Minute,
+			},
+		},
+	}
+	http.DefaultClient = client
+}
 
 func main() {
 	flag.Parse()
